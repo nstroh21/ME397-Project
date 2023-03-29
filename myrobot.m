@@ -10,6 +10,7 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
         jointTypes;         %Binary List for each joint type, either 0 or 1
         homeVectors;        %set of 6D vectors describing position and orientation of joints
         screws;             %Set of 6D vectors describing screw axes derived from homeVectors
+        joints;
         pose;
         %partner
     end
@@ -22,7 +23,9 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
             obj.numJoints = numJoints;
             obj.jointTypes = zeros(numJoints);  % 0 for rotation and 1 for prismatic
             obj.screws = zeros(numJoints,6);
-            disp("Robot Created With 6 Joints in Space Frame");
+            obj.joints = zeros(1,numJoints);
+            formatSpec = 'Robot Created With %d Joints in %s Frame'; 
+            fprintf(formatSpec,numJoints,frame);
         end
 
         function obj = addJoint(obj,jointNumber, type, V, VType)
@@ -44,14 +47,39 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
                 disp(obj.screws);
             end
         end
+        function HOME(obj)
+            disp("Wherever your robot was, it is reset to home position");
+            obj.joints = zeros(1,numJoints);
+            % reset screw axes
+            for i = 1:obj.numJoints
+                obj.addJoint(i, obj.jointTypes(i), homeVectors(i), "pose");
+            end
+        end
+        function MOVE(obj, thetas)
+            % set robot to position, uniquely defined by joints
+            % The Jacobian will not automatically be known ... (add this
+            % feature ?) 
+            obj.joints = thetas;
+        end
         function getScrews(obj)
-            disp("This function can call FK_space to set screw vectors")
+            disp("This function can call FK_space to set screw vectors");
         end
         function printHome(obj)
-            disp(obj.M)
+            disp(obj.M);
+        end
+        function thetas = getJoints(obj)
+            thetas = obj.joints;
+        end
+        function J_space_setScrews(obj,J)
+            % If you have a space Jacobian, you can set screw axes here,
+            % use carefully as column order is expected to be correct
+            cols = length(J(1,:));
+            for i = 1:cols
+                obj.screws(i) = J(:,i);  % try -- dimensions must match
+            end
         end
         function printPose(obj)
-            disp(obj.pose)
+            disp(obj.pose);
         end
     end
 end

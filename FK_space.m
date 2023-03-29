@@ -4,7 +4,7 @@
 % coordinates are passed, therefore if a joint is not intended to move, pass "0" for that joint
 
 function T_space  = FK_space(robot, joints)
-    steps = length(joints)
+    steps = length(joints);
     j = 1;
     try
         screws = robot.screws;
@@ -26,15 +26,20 @@ function T_space  = FK_space(robot, joints)
         % rotating joint = 0 , prismatic joint = 1
         th = joints(j); S = screws(j,:); jointType = robot.jointTypes(j);
         if jointType == 0
+            %disp(th)
             T = chaslesMozzi(S, th, 0); % pure rotation
+            %disp("rot joint");
         else
             T = chaslesMozzi(S, th, 1); % pure translation
         end 
         if j == 1
             T_space = T;
-        end
-        if j == steps
-                T_space = T_space*T*M;  % Full Forward Kinematics to the End Effector, assumes that all joints are defined or 0
+            %disp("T initial")
+            %disp(T);
+            j = j+1;
+            continue;
+        elseif j == steps
+            T_space = T_space*T*M;  % Full Forward Kinematics to the End Effector, assumes that all joints are defined or 0
         else
             T_space = T_space*T;
         end
