@@ -7,10 +7,10 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
         frame = "space";    %
         M;                  %Home Configuration of the end effector 
         numJoints;          %scalar to track number of joints in the system
-        jointTypes;         %Binary List for each joint type, either 0 or 1
-        homeVectors;        %set of 6D vectors describing position and orientation of joints
-        screws;             %Set of 6D vectors describing screw axes derived from homeVectors
-        joints;
+        jointTypes;         %Binary List for each joint type, either 0 = "rot" , 1 = "prismatic"
+        homeVectors;        %set of 6D vectors describing position and axis of rotation of joints at HOME positon. NOTE: THESE ARE CONSTANT
+        screws;             %Set of 6D vectors describing screw axes derived from homeVectors, these update inside MOVE function
+        joints;             % Vector 
         pose;
         %partner
     end
@@ -28,20 +28,24 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
             fprintf(formatSpec,numJoints,frame);
         end
 
+        % Only ever call this when you build it
         function obj = addJoint(obj,jointNumber, type, V, VType)
             %Overwrties joint configuration if exists, V = homeVector position
              obj.jointTypes(jointNumber) = type;
-            if VType == "pose"
+            if VType == "homeVector"
+                % this adds a home vector
                 obj.homeVectors(jointNumber,:) = V;
                 disp("Joint Added, Pose:");
                 disp(obj.homeVectors);
+                % calculates the screw axis
                 v = -1.*skewSym(V(1:3))*V(4:6)';
                 screw = [V(1:3),v'];
+                % updates screw matrix
                 obj.screws(jointNumber,:) = screw;
                 disp("Screws Updated: ");
                 disp(obj.screws);
             %setScrew(obj, vector, jointNumber); % code below sets the screw
-            else
+            else 
                 obj.screws(jointNumber,:) = V;
                 disp("Joint Added, Pose Unknown, Screws Updated: ");
                 disp(obj.screws);
@@ -55,10 +59,12 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
                 obj.addJoint(i, obj.jointTypes(i), homeVectors(i), "pose");
             end
         end
-        function MOVE(obj, thetas)
-            % set robot to position, uniquely defined by joints
-            % The Jacobian will not automatically be known ... (add this
-            % feature ?) 
+        function MOVE(obj, thetas)  % Decided we move one Joint at a time
+
+            % TO DO: take in one joint, update joint vector and
+            % corresponding screw axis
+            % Technically: check if movement is legal (joint limits)
+
             obj.joints = thetas;
         end
         function getScrews(obj)

@@ -8,7 +8,7 @@ function [T_final, q] = J_transpose_kinematics(robot, Tsd)
     q = robot.joints         % initial, won't actually move robot
     %q = q';
     J = J_space(robot, q);   % J_space
-    K = 3*eye(6);              % requirement is positive definite (some better weighting? -- 3 arbitrary)
+    K = 100*eye(6);              % requirement is positive definite (some better weighting? -- 3 arbitrary)
     err = 30;
     % Now I think we just iteratively move robot until error converges to 0
     iterations = 0;
@@ -22,7 +22,7 @@ function [T_final, q] = J_transpose_kinematics(robot, Tsd)
         if err < 1e-4
             break
         end
-        if iterations > 100
+        if iterations > 2000
             disp('timed out')
             break
         end
@@ -39,6 +39,7 @@ function [T_final, q] = J_transpose_kinematics(robot, Tsd)
             iterations = iterations + 1;
             err = norm(Vb);
         end   
-    end 
+    end
+    disp(iterations)
     T_final = Tsb;
 end
