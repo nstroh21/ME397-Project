@@ -24,7 +24,10 @@ function T_space  = FK_space(robot, joints)
         
         % STEP 2: Use ChaslesMozzi to get T matrix and take product
         % rotating joint = 0 , prismatic joint = 1
-        th = joints(j); S = screws(j,:); jointType = robot.jointTypes(j);
+        th = joints(j); 
+        S = screws(j,:); 
+        jointType = robot.jointTypes(j);
+
         if jointType == 0
             %disp(th)
             T = chaslesMozzi(S, th, 0); % pure rotation
@@ -32,6 +35,7 @@ function T_space  = FK_space(robot, joints)
         else
             T = chaslesMozzi(S, th, 1); % pure translation
         end 
+        
         if j == 1
             T_space = T;
             %disp("T initial")
