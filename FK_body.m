@@ -1,3 +1,11 @@
+%%% Calculates the body form of the specified robot's forward kinematics.
+%%% Robot must be defined in the body form.
+%
+% ARGUMENTS: robot: robot object to calculate FK for
+%            joints: 1D vector containing all joint angles in order of
+%            definition
+% OUTPUTS:   T_body: configuration of the spatial frame wrt body frame.
+
 function T_body = FK_body(robot, joints)
     steps = length(joints);
     j = 1;

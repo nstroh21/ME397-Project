@@ -44,7 +44,11 @@ classdef myrobot    %  < hw1 could "inherit" hw1 functions but doesn't make a lo
                 disp(obj.homeVectors);
                 % calculates the screw axis
                 v = -1.*skewSym(hv(1:3))*hv(4:6)';
-                screw = [hv(1:3),v'];
+                if type == 0
+                    screw = [hv(1:3),v'];
+                else
+                    screw = hv;
+                end
                 % updates screw matrix
                 obj.screws(jointNumber,:) = screw;
                 disp("Screws Updated: ");

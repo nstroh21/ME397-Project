@@ -1,3 +1,12 @@
+%%% Returns the Jacobian of a given robot in the body frame. 
+
+% ARGUMENTS: robot: the robot object for which to calculate the Jacobian.
+%            This class should contain all necessary information about the robot
+%            configuration, such as the screw axes.
+%            angles: the vector of joint angles, in the order defined in
+%            the robot class. 
+% OUTPUTS:   Jb: the Jacobian in the body form.
+
 function Jb = J_body(robot, angles)
     i = length(angles);
 
@@ -21,18 +30,16 @@ function Jb = J_body(robot, angles)
         S = screws(i, :);
         if i == length(angles)
             T = eye(4);
-            Jb(:, i) = S;
+            Jb(:, i) = S';
             i = i - 1;
         else
             E = chaslesMozzi(-screws(i+1, :), angles(i+1), 0);
             Tj = T*E;
-            Jb(:, i) = adjoint(Tj)*S';
+            Jb(:, i) = adjoint(T*E)*S';
             i = i - 1;
-            T = Tj;
         end
     end
 end
 
-
-
-        
+% function Jb = J_body(robot, angles)
+%     Jb = 
