@@ -1,24 +1,18 @@
-function [T_final, q] = J_transpose_kinematics(robot, Tsd)
-    %UNTITLED7 Summary of this function goes here
-    %   Detailed explanation goes here
-    
-    % Tsd is the desired final location, still need to do all the twist vector
-    % stuff
+function [T_final, q] = J_transpose_kinematics(robot, Tsd, guess)
 
-    q = robot.joints         % initial, won't actually move robot
-    %q = q';
-    J = J_space(robot, q);   % J_space
-    K = 100*eye(6);              % requirement is positive definite (some better weighting? -- 3 arbitrary)
-    err = 30;
+    % Trying to implement Jacobian Transpose method. K positive
+    % semi-definite matrix or alpha both erffectively do the same thing
+    % (the provide weighting to the equation J_transpose*error
+
+    q = guess;                   % initial, won't actually move robot              
+    err = 30; alpha = 1; K = 100*eye(6);      %requirement is positive definite (some better weighting? -- 3 arbitrary)
     % Now I think we just iteratively move robot until error converges to 0
     iterations = 0;
     while err > 1e-4                                          % double precision
         Tsb = FK_space(robot,q) ;                             % confirmed on 2Chainz,
         Tbs = invertSE3(Tsb); Tbd = Tbs*Tsd;                  % confrimed on 2Chainz, SCARA,
-        %disp("same?"); disp(Tsd);
         [alpha, S] = se3Logarithm(Tbd); Vb = alpha .* S;      % Retrieve body twist = Current Error level
-        disp(err);
-        Js = J_space(robot, q); Jb = adjoint(Tbs)*Js;       % J_body?
+        Js = J_space(robot, q); Jb = adjoint(Tbs)*Js;         % J_body
         if err < 1e-4
             break
         end
@@ -29,17 +23,19 @@ function [T_final, q] = J_transpose_kinematics(robot, Tsd)
         if rank(Jb) ~= length(Jb(1,:))
             % if abs(det(J)) < 1e-11  % Only square
             disp(length(Jb(1,:))); disp(rank(Jb));
-            disp("Matrix is not full rank, use another method")
+            disp("Matrix is not full rank, use another method");
             T_final = zeros(4,4);
             break;
         else  % robot update step                               
-            % treat err = Vb;
-            q_delta = (Jb'*K*Vb')';       % print for now to ensure not too large
-            q = q + q_delta; 
-            iterations = iterations + 1;
-            err = norm(Vb);
+            % treat err = Vb;  % Using alpha scalar method from paper
+            num = Vb *(Jb*Jb'*Vb'); 
+            denom = (Jb*Jb'*Vb')'*(Jb*Jb'*Vb');
+            alpha = num/denom;  q_delta = alpha.*(Jb'*Vb')';
+            q = q + q_delta; iterations = iterations + 1; err = norm(Vb); 
+%             disp("angles: "); disp(q*(180/pi)) 
         end   
     end
-    disp(iterations)
+    disp('err: '); disp(norm(Vb));
+    disp("iters");disp(iterations);
     T_final = Tsb;
 end
