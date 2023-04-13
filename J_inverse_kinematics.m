@@ -8,7 +8,7 @@ function [T_final, jointVec, iterations, manip, iso] = J_inverse_kinematics(robo
 
     % initial guess (current pose -- maybe use randomization)
     %q = robot.getJoints(); 
-    q = guess; ymm = []; iso = []; k = .05;   % Dampening Factor
+    q = guess; ymm = []; iso = []; k = .3;   % Dampening Factor
     maxiter = 500; iterations = []; i = 0; ymm = [];
     iso_max = 100;
     
